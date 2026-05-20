@@ -8,7 +8,7 @@
   author = {Martin Monperrus},
   title  = {arXiv contributor growth: is Gen AI causing an explosion of new submitters?},
   year   = {2026},
-  url    = {https://github.com/ASSERT-KTH/arxiv-contributor-increase}
+  howpublished = {https://github.com/ASSERT-KTH/arxiv-contributor-increase}
 }
 ```
 
