@@ -151,7 +151,8 @@ def make_figure(df_all: pd.DataFrame, df_aiml: pd.DataFrame):
 
 # ── README ────────────────────────────────────────────────────────────────────
 
-def write_readme(df_all: pd.DataFrame, df_aiml: pd.DataFrame):
+def write_readme(df_all: pd.DataFrame, df_aiml: pd.DataFrame,
+                 dfs_exh: dict | None = None):
 
     sd_tot   = stat_dict(df_all["total_papers"].values)
     sd_all   = stat_dict(df_all["est_unique"].values)
@@ -183,6 +184,53 @@ def write_readme(df_all: pd.DataFrame, df_aiml: pd.DataFrame):
 
     def trend(sd):
         return "increasing" if sd["slope"] > 0 else "decreasing"
+
+    # ── Exhaustive section (appended when data is available) ─────────────────
+    if dfs_exh:
+        exh_parts = []
+        for cat, df_c in dfs_exh.items():
+            sd_u = stat_dict(df_c["unique_authors"].values.astype(float))
+            sd_t = stat_dict(df_c["total_papers"].values.astype(float))
+            sd_r = stat_dict(df_c["ratio"].values.astype(float))
+            pct_u = ((df_c["unique_authors"].iloc[-1] - df_c["unique_authors"].iloc[0])
+                     / df_c["unique_authors"].iloc[0] * 100)
+            pct_t = ((df_c["total_papers"].iloc[-1] - df_c["total_papers"].iloc[0])
+                     / df_c["total_papers"].iloc[0] * 100)
+            tbl = "\n".join(
+                f"| {row['label']} | {row['total_papers']:,} | "
+                f"{row['unique_authors']:,} | {row['ratio']*100:.1f}% |"
+                for _, row in df_c.iterrows()
+            )
+            exh_parts.append(f"""
+### Exhaustive results: {cat}
+
+| Month | Total papers | Unique first authors | Ratio |
+|-------|-------------|---------------------|-------|
+{tbl}
+
+| Metric | OLS slope | R² | OLS p | MK τ | MK p | 12-mo change |
+|--------|----------|----|-------|------|------|-------------|
+| Total papers | {sd_t['slope']:+.1f}/mo | {sd_t['r2']:.3f} | {sd_t['p']:.4f} | {sd_t['mk_tau']:.3f} | {sd_t['mk_p']:.4f} | **{pct_t:+.1f}%** |
+| Unique first authors | {sd_u['slope']:+.1f}/mo | {sd_u['r2']:.3f} | {sd_u['p']:.4f} | {sd_u['mk_tau']:.3f} | {sd_u['mk_p']:.4f} | **{pct_u:+.1f}%** |
+| Uniqueness ratio | {sd_r['slope']*100:+.4f}%/mo | {sd_r['r2']:.3f} | {sd_r['p']:.4f} | {sd_r['mk_tau']:.3f} | {sd_r['mk_p']:.4f} | — |
+
+Unique first authors ({cat}): {sig(sd_u['p'])}.
+""")
+
+        exh_section = f"""
+---
+
+## Exhaustive per-category analysis (cs.LG and cs.SE)
+
+Unlike the sampling-based approach above, these counts are **exhaustive**:
+every paper submitted in the target month and indexed under the given
+OAI-PMH set is included.  This eliminates the rare-event bias that
+inflates uniqueness ratios in sparse samples.
+
+![Exhaustive unique authors per month](figure_exhaustive.png)
+{''.join(exh_parts)}"""
+    else:
+        exh_section = "\n\n*(Exhaustive per-category data not yet collected — run `collect_exhaustive.py`)*"
 
     readme = f"""\
 # arXiv contributor growth: is Gen AI causing an explosion of new submitters?
@@ -355,11 +403,13 @@ should not be interpreted as a volume proxy.
 
 ```bash
 pip install requests pandas matplotlib scipy numpy
-python main.py     # fetches all-arXiv + AI/ML data via OAI-PMH (~15 min total,
-                   # cached in data_cache.json after first run)
-python analyze.py  # re-runs analysis, regenerates figure.png and README.md
+python main.py              # fetches all-arXiv + AI/ML samples (~15 min,
+                            # cached in data_cache.json)
+python collect_exhaustive.py  # exhaustive cs.LG + cs.SE collection (~10 min,
+                            # cached in data_cache.json)
+python analyze.py           # regenerates all figures and README.md
 ```
-"""
+{exh_section}"""
 
     with open("README.md", "w") as f:
         f.write(readme)
@@ -460,7 +510,108 @@ def main():
     print("\nData saved → results_all.csv, results_aiml.csv")
 
     make_figure(df_all, df_aiml)
-    write_readme(df_all, df_aiml)
+
+    # ── Exhaustive per-category data (optional) ──────────────────────────────
+    CATS = ["cs.LG", "cs.SE"]
+    exh_keys = {cat: sorted(k for k in cache if k.endswith(f"-{cat}"))
+                for cat in CATS}
+    have_exhaustive = all(len(exh_keys[c]) == 12 for c in CATS)
+
+    if have_exhaustive:
+        dfs_exh = {}
+        for cat in CATS:
+            rows = []
+            for key in exh_keys[cat]:
+                r = cache[key]
+                base = key[: -len(f"-{cat}")]
+                rows.append({
+                    "label":          base,
+                    "total_papers":   r["total_papers"],
+                    "unique_authors": r["unique_authors"],
+                    "ratio":          r["unique_authors"] / r["total_papers"]
+                                      if r["total_papers"] else 0.0,
+                })
+            dfs_exh[cat] = pd.DataFrame(rows)
+
+        print("\n── Exhaustive: cs.LG ─────────────────────────────────")
+        print(dfs_exh["cs.LG"].to_string())
+        print("\n── Exhaustive: cs.SE ─────────────────────────────────")
+        print(dfs_exh["cs.SE"].to_string())
+
+        for cat in CATS:
+            df_c = dfs_exh[cat]
+            sd_u = stat_dict(df_c["unique_authors"].values.astype(float))
+            sd_t = stat_dict(df_c["total_papers"].values.astype(float))
+            sd_r = stat_dict(df_c["ratio"].values.astype(float))
+            print(f"\n── Trend ({cat}): total papers ────────────────────")
+            print(f"  OLS slope={sd_t['slope']:+.1f}/mo  R²={sd_t['r2']:.3f}  p={sd_t['p']:.4f}")
+            print(f"  MK  τ={sd_t['mk_tau']:.3f}  p={sd_t['mk_p']:.4f}")
+            print(f"── Trend ({cat}): unique first authors ────────────")
+            print(f"  OLS slope={sd_u['slope']:+.1f}/mo  R²={sd_u['r2']:.3f}  p={sd_u['p']:.4f}")
+            print(f"  MK  τ={sd_u['mk_tau']:.3f}  p={sd_u['mk_p']:.4f}")
+            print(f"── Trend ({cat}): uniqueness ratio ────────────────")
+            print(f"  mean={df_c['ratio'].mean()*100:.2f}%  "
+                  f"OLS slope={sd_r['slope']*100:+.4f}%/mo  "
+                  f"p={sd_r['p']:.4f}")
+
+        make_exhaustive_figure(dfs_exh)
+        write_readme(df_all, df_aiml, dfs_exh)
+    else:
+        missing = {c: 12 - len(exh_keys[c]) for c in CATS if len(exh_keys[c]) < 12}
+        print(f"\nExhaustive data not yet complete: {missing}")
+        print("Run  python collect_exhaustive.py  then re-run analyze.py")
+        write_readme(df_all, df_aiml)
+
+
+def make_exhaustive_figure(dfs_exh: dict):
+    """2-panel figure: cs.LG and cs.SE unique authors (exhaustive counts)."""
+    CATS   = ["cs.LG", "cs.SE"]
+    COLORS = {"cs.LG": PURPLE, "cs.SE": GREEN}
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    for ax, cat in zip(axes, CATS):
+        df   = dfs_exh[cat]
+        x    = np.arange(len(df))
+        sd_u = stat_dict(df["unique_authors"].values.astype(float))
+        sd_t = stat_dict(df["total_papers"].values.astype(float))
+
+        ax.bar(x, df["unique_authors"].values, color=COLORS[cat], alpha=0.72, zorder=2,
+               label="Unique first authors")
+        ax.bar(x, df["total_papers"].values, color="lightgray", alpha=0.5, zorder=1,
+               label="Total papers")
+
+        trend_u = sd_u["slope"] * x + sd_u["intercept"]
+        ax.plot(x, trend_u, "--", color=RED, lw=2, zorder=3,
+                label=(f"OLS unique  slope={sd_u['slope']:+.1f}/mo  "
+                       f"R²={sd_u['r2']:.2f}  p={sd_u['p']:.3f}"))
+
+        ax.set_title(f"{cat} — exhaustive unique first authors per month",
+                     fontsize=11, fontweight="bold")
+        ax.set_ylabel("Count", fontsize=10)
+        ax.legend(fontsize=8, loc="upper left")
+        ax.grid(axis="y", alpha=0.3, zorder=1)
+        ax.yaxis.set_major_formatter(
+            mticker.FuncFormatter(lambda v, _: f"{int(v):,}"))
+
+        mk_txt = (f"Mann-Kendall  τ = {sd_u['mk_tau']:.3f}   "
+                  f"p = {sd_u['mk_p']:.3f}")
+        ax.text(0.99, 0.96, mk_txt, transform=ax.transAxes,
+                fontsize=8, va="top", ha="right", color="darkred",
+                bbox=dict(boxstyle="round,pad=0.3", fc="lightyellow",
+                          ec="#999", alpha=0.85))
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(df["label"].tolist(), rotation=45,
+                           ha="right", fontsize=9)
+
+    fig.suptitle(
+        "arXiv exhaustive unique first authors per month  ·  May 2025 – April 2026\n"
+        "cs.LG (Machine Learning) and cs.SE (Software Engineering)",
+        fontsize=12, y=1.01)
+    plt.tight_layout()
+    plt.savefig("figure_exhaustive.png", dpi=150, bbox_inches="tight")
+    print("Figure saved → figure_exhaustive.png")
 
 
 if __name__ == "__main__":

@@ -86,8 +86,8 @@ Significance threshold: α = 0.05.
 
 | Metric | OLS slope | R² | OLS p | MK τ | MK p | 12-mo change |
 |--------|----------|----|-------|------|------|-------------|
-| Total papers (official) | +320/mo | 0.234 | 0.1112 | 0.242 | 0.3108 | **+13.3%** |
-| Est. unique first authors | +294/mo | 0.203 | 0.1416 | 0.182 | 0.4590 | **+13.4%** |
+| Total papers (official) | +320/mo | 0.234 | 0.1112 | 0.242 | 0.3108 | **+193.2%** |
+| Est. unique first authors | +294/mo | 0.203 | 0.1416 | 0.182 | 0.4590 | **+189.1%** |
 
 Total papers: not significant (p ≥ 0.05).
 Estimated unique first authors: not significant (p ≥ 0.05).
@@ -142,8 +142,8 @@ All-arXiv uniqueness ratio: not significant (p ≥ 0.05).
 
 **All arXiv** — total submissions grew from
 24,878 (May 2025) to 28,197 (Apr 2026),
-a +13.3% change with a increasing trend that is not significant (p ≥ 0.05).
-Estimated unique first authors moved +13.4% over the same period
+a +193.2% change with a increasing trend that is not significant (p ≥ 0.05).
+Estimated unique first authors moved +189.1% over the same period
 (not significant (p ≥ 0.05)).
 
 **AI/ML specifically** (cs.AI ∪ cs.LG ∪ cs.CL ∪ stat.ML) — the uniqueness
@@ -190,7 +190,70 @@ The AI/ML-specific analysis provides no additional evidence for the hypothesis b
 
 ```bash
 pip install requests pandas matplotlib scipy numpy
-python main.py     # fetches all-arXiv + AI/ML data via OAI-PMH (~15 min total,
-                   # cached in data_cache.json after first run)
-python analyze.py  # re-runs analysis, regenerates figure.png and README.md
+python main.py              # fetches all-arXiv + AI/ML samples (~15 min,
+                            # cached in data_cache.json)
+python collect_exhaustive.py  # exhaustive cs.LG + cs.SE collection (~10 min,
+                            # cached in data_cache.json)
+python analyze.py           # regenerates all figures and README.md
 ```
+
+---
+
+## Exhaustive per-category analysis (cs.LG and cs.SE)
+
+Unlike the sampling-based approach above, these counts are **exhaustive**:
+every paper submitted in the target month and indexed under the given
+OAI-PMH set is included.  This eliminates the rare-event bias that
+inflates uniqueness ratios in sparse samples.
+
+![Exhaustive unique authors per month](figure_exhaustive.png)
+
+### Exhaustive results: cs.LG
+
+| Month | Total papers | Unique first authors | Ratio |
+|-------|-------------|---------------------|-------|
+| 2025-05 | 2,780 | 2,653 | 95.4% |
+| 2025-06 | 2,665 | 2,573 | 96.5% |
+| 2025-07 | 2,423 | 2,333 | 96.3% |
+| 2025-08 | 2,294 | 2,196 | 95.7% |
+| 2025-09 | 2,861 | 2,742 | 95.8% |
+| 2025-10 | 3,533 | 3,349 | 94.8% |
+| 2025-11 | 2,868 | 2,744 | 95.7% |
+| 2025-12 | 2,706 | 2,559 | 94.6% |
+| 2026-01 | 2,860 | 2,733 | 95.6% |
+| 2026-02 | 4,023 | 3,792 | 94.3% |
+| 2026-03 | 4,174 | 3,901 | 93.5% |
+| 2026-04 | 3,847 | 3,612 | 93.9% |
+
+| Metric | OLS slope | R² | OLS p | MK τ | MK p | 12-mo change |
+|--------|----------|----|-------|------|------|-------------|
+| Total papers | +133.6/mo | 0.571 | 0.0045 | 0.515 | 0.0210 | **+38.4%** |
+| Unique first authors | +119.7/mo | 0.558 | 0.0052 | 0.485 | 0.0311 | **+36.1%** |
+| Uniqueness ratio | -0.2193%/mo | 0.669 | 0.0012 | -0.667 | 0.0018 | — |
+
+Unique first authors (cs.LG): **significant** (p < 0.05).
+
+### Exhaustive results: cs.SE
+
+| Month | Total papers | Unique first authors | Ratio |
+|-------|-------------|---------------------|-------|
+| 2025-05 | 266 | 256 | 96.2% |
+| 2025-06 | 322 | 300 | 93.2% |
+| 2025-07 | 351 | 332 | 94.6% |
+| 2025-08 | 279 | 270 | 96.8% |
+| 2025-09 | 349 | 335 | 96.0% |
+| 2025-10 | 445 | 427 | 96.0% |
+| 2025-11 | 339 | 330 | 97.3% |
+| 2025-12 | 378 | 361 | 95.5% |
+| 2026-01 | 472 | 452 | 95.8% |
+| 2026-02 | 424 | 406 | 95.8% |
+| 2026-03 | 540 | 507 | 93.9% |
+| 2026-04 | 780 | 740 | 94.9% |
+
+| Metric | OLS slope | R² | OLS p | MK τ | MK p | 12-mo change |
+|--------|----------|----|-------|------|------|-------------|
+| Total papers | +31.7/mo | 0.660 | 0.0013 | 0.727 | 0.0005 | **+193.2%** |
+| Unique first authors | +30.1/mo | 0.670 | 0.0011 | 0.758 | 0.0002 | **+189.1%** |
+| Uniqueness ratio | -0.0193%/mo | 0.003 | 0.8561 | -0.212 | 0.3807 | — |
+
+Unique first authors (cs.SE): **significant** (p < 0.05).
