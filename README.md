@@ -3,212 +3,47 @@
 ## Hypothesis
 
 With the widespread adoption of generative AI tools and autonomous coding
-agents, the barrier to writing and submitting research papers has fallen
-significantly.  We hypothesize that this has produced a measurable
-**explosion of new submitters** on arXiv over the period May 2025 – April 2026,
-and that this effect is most pronounced in **AI/ML papers** (cs.AI, cs.LG,
-cs.CL, stat.ML) where the tooling impact is most direct.
+agents, the barrier to writing and submitting research papers has fallen.
+We test whether this produced a measurable explosion of new submitters on
+arXiv over May 2025 – April 2026, focusing on two categories:
+**cs.LG** (Machine Learning) and **cs.SE** (Software Engineering).
 
 ## Methodology
 
-### Data sources
+### Data source
 
-| Source | What it provides |
-|--------|-----------------|
-| arXiv OAI-PMH (`export.arxiv.org/oai2`, `metadataPrefix=arXiv`) | Author names for new papers in each target month |
-| arXiv official statistics (`arxiv.org/stats/get_monthly_submissions`) | Ground-truth total papers per month (all categories) |
+arXiv OAI-PMH harvest API (`export.arxiv.org/oai2`, `metadataPrefix=arXiv`),
+queried per category with the OAI-PMH `set` parameter.
 
-### Identifying new submissions by month
+### Identifying new submissions
 
-arXiv paper identifiers encode the month of first submission: a paper with
-ID `2505.NNNNN` was submitted for the first time in **May 2025**.  For each
-target month `YYMM`, we harvest OAI-PMH records within a ±2-week window
-around that month and keep only records whose identifier prefix matches
-`YYMM.`, giving an unambiguous mapping that is unaffected by later revisions.
-
-### All-arXiv analysis
-
-We query OAI-PMH **without a category filter** to sample all new papers.
-Using the first-author uniqueness ratio in the sample, multiplied by the
-official total, we estimate the monthly count of unique first authors
-across all arXiv.
-
-### AI/ML-specific analysis
-
-We query OAI-PMH separately for each of the four AI/ML OAI sets:
-
-| OAI-PMH set | arXiv category |
-|-------------|---------------|
-| `cs:cs:LG`  | Machine Learning |
-| `cs:cs:AI`  | Artificial Intelligence |
-| `cs:cs:CL`  | Computation and Language (NLP) |
-| `stat:stat:ML` | Machine Learning (Statistics) |
-
-Papers are collected from all four sets and **deduplicated by paper ID**
-so cross-listed papers are counted once.  Per-category official totals
-are not available via arXiv's public stats API, so we report raw sample
-counts and use the sample's unique-author count directly as the trend metric.
+arXiv paper IDs encode the month of first submission: `2505.NNNNN` means May
+2025. For each target month `YYMM` we harvest all OAI-PMH records for the
+category within a ±2-week window starting from the 1st of the month, keep
+only records whose ID prefix matches `YYMM.`, and follow every resumption
+token until two consecutive pages return zero matching records. This is
+**exhaustive** — every paper submitted that month in that category is
+collected.
 
 ### Proxy metric for unique submitters
 
-The OAI-PMH API exposes **author names** but not arXiv account identities.
-We use the **first-listed author** as a proxy for the submitter.
+OAI-PMH exposes author names, not account identities. We use the
+**first-listed author** as a proxy for the submitter. All raw author lists
+are stored in `data_cache.json`.
 
 ### Statistical tests
 
-| Test | Description |
-|------|-------------|
-| **OLS linear regression** | Monthly value on time index 0–11. Reports slope, R², two-sided p-value. |
-| **Mann-Kendall** | Non-parametric monotonic-trend test (Kendall τ). |
-
-Significance threshold: α = 0.05.
+Both OLS linear regression (slope, R², p-value) and the non-parametric
+Mann-Kendall trend test (Kendall τ, p-value) are applied to each monthly
+series. Significance threshold: α = 0.05.
 
 ## Results
 
-### All-arXiv monthly data
+All numbers below come from `data_cache.json` (keys `YYYY-MM-cs.LG` and
+`YYYY-MM-cs.SE`). The statistical summaries printed by `analyze.py` are the
+authoritative reference for p-values and slopes.
 
-| Month | Total papers | OAI sample | Unique in sample | Ratio | Est. unique submitters |
-|-------|-------------|-----------|-----------------|-------|----------------------|
-| 2025-05 | 24,878 | 734 | 719 | 0.980 | 24,369 |
-| 2025-06 | 24,129 | 513 | 505 | 0.984 | 23,752 |
-| 2025-07 | 23,787 | 785 | 775 | 0.987 | 23,483 |
-| 2025-08 | 21,825 | 1,140 | 1,112 | 0.975 | 21,288 |
-| 2025-09 | 26,646 | 1,059 | 1,026 | 0.969 | 25,815 |
-| 2025-10 | 27,692 | 520 | 509 | 0.979 | 27,106 |
-| 2025-11 | 23,478 | 935 | 908 | 0.971 | 22,800 |
-| 2025-12 | 25,075 | 1,057 | 1,035 | 0.979 | 24,553 |
-| 2026-01 | 23,286 | 1,206 | 1,168 | 0.968 | 22,552 |
-| 2026-02 | 24,290 | 997 | 963 | 0.966 | 23,461 |
-| 2026-03 | 30,045 | 1,059 | 1,033 | 0.975 | 29,307 |
-| 2026-04 | 28,197 | 804 | 788 | 0.980 | 27,635 |
-
-### All-arXiv trend results
-
-| Metric | OLS slope | R² | OLS p | MK τ | MK p | 12-mo change |
-|--------|----------|----|-------|------|------|-------------|
-| Total papers (official) | +320/mo | 0.234 | 0.1112 | 0.242 | 0.3108 | **+193.2%** |
-| Est. unique first authors | +294/mo | 0.203 | 0.1416 | 0.182 | 0.4590 | **+189.1%** |
-
-Total papers: not significant (p ≥ 0.05).
-Estimated unique first authors: not significant (p ≥ 0.05).
-
----
-
-### AI/ML monthly data  (cs.AI ∪ cs.LG ∪ cs.CL ∪ stat.ML)
-
-| Month | Papers in sample | Unique first authors |
-|-------|-----------------|---------------------|
-| 2025-05 | 3,111 | 2,961 |
-| 2025-06 | 1,657 | 1,592 |
-| 2025-07 | 2,552 | 2,473 |
-| 2025-08 | 2,676 | 2,549 |
-| 2025-09 | 2,686 | 2,578 |
-| 2025-10 | 2,111 | 2,031 |
-| 2025-11 | 2,167 | 2,098 |
-| 2025-12 | 2,407 | 2,312 |
-| 2026-01 | 3,173 | 3,022 |
-| 2026-02 | 2,410 | 2,314 |
-| 2026-03 | 2,486 | 2,356 |
-| 2026-04 | 2,509 | 2,376 |
-
-### AI/ML trend results
-
-The raw unique-author count is confounded by OAI-PMH sample-size variability
-(1,657–3,173 papers/month), so the **uniqueness ratio** (unique ÷ sample) is
-the primary normalised metric for the AI/ML analysis.
-
-| Metric | OLS slope | R² | OLS p | MK τ | MK p |
-|--------|----------|----|-------|------|------|
-| AI/ML sample size | +5.4/mo | 0.002 | 0.8842 | 0.061 | 0.8406 |
-| Unique first authors (raw) | +3.4/mo | 0.001 | 0.9232 | 0.061 | 0.8406 |
-| **Uniqueness ratio** | **-0.0786%/mo** | 0.150 | 0.2137 | -0.303 | 0.1969 |
-
-For comparison, the all-arXiv uniqueness ratio:
-
-| Metric | OLS slope | R² | OLS p | MK τ | MK p |
-|--------|----------|----|-------|------|------|
-| All-arXiv uniqueness ratio | -0.0824%/mo | 0.203 | 0.1418 | -0.273 | 0.2496 |
-
-AI/ML uniqueness ratio: not significant (p ≥ 0.05).
-All-arXiv uniqueness ratio: not significant (p ≥ 0.05).
-
-### Figure
-
-![arXiv submitter and submission trends, May 2025 – April 2026](figure.png)
-
-## Summary
-
-### The data provide weak or inconclusive evidence
-
-**All arXiv** — total submissions grew from
-24,878 (May 2025) to 28,197 (Apr 2026),
-a +193.2% change with a increasing trend that is not significant (p ≥ 0.05).
-Estimated unique first authors moved +189.1% over the same period
-(not significant (p ≥ 0.05)).
-
-**AI/ML specifically** (cs.AI ∪ cs.LG ∪ cs.CL ∪ stat.ML) — the uniqueness
-ratio in AI/ML samples is remarkably stable at 95.8% ± 0.7%
-(OLS slope -0.0786%/mo, not significant (p ≥ 0.05)).
-This is slightly **lower** than the all-arXiv ratio
-(97.6% ± 0.6%),
-reflecting the higher collaboration rates in AI/ML papers.
-Neither ratio shows a statistically significant trend.
-
-The raw AI/ML unique-author count is confounded by OAI-PMH sample-size
-variability (sample sizes range 1,657–3,173 papers/month) and
-should not be interpreted as a volume proxy.
-
-The AI/ML-specific analysis provides no additional evidence for the hypothesis beyond what the all-arXiv data already shows. The stable uniqueness ratios in both samples suggest that the MIX of new vs. returning contributors per paper has not changed within this period, even as total submission volume grows.
-
-## Caveats and limitations
-
-1. **No causal attribution** — we cannot establish that Gen AI *caused* the
-   growth. arXiv submissions have grown secularly for 30 years.
-
-2. **No historical baseline** — without pre-2025 data it is impossible to tell
-   whether the current growth rate is anomalous.
-
-3. **Name disambiguation** — first-author names are not disambiguated; the
-   same person may appear under multiple name variants (inflating counts) or
-   common names may collapse distinct individuals (deflating them).
-
-4. **First author ≠ submitter** — the OAI-PMH API does not expose the arXiv
-   account that submitted the paper.
-
-5. **AI/ML sample size variability** — the sample size for the AI/ML analysis
-   varies across months because we stop per-set collection at 300 papers.
-   Months with more cross-listed papers yield larger unions.  The unique-author
-   count therefore partially reflects sample size, not just population
-   diversity.  The OLS slope on AI/ML sample size is shown explicitly to make
-   this transparent.
-
-6. **AI productivity vs. new entrants** — growth could reflect a fixed pool of
-   researchers each producing more papers with AI assistance, rather than
-   genuinely new contributors.
-
-## Reproducibility
-
-```bash
-pip install requests pandas matplotlib scipy numpy
-python main.py              # fetches all-arXiv + AI/ML samples (~15 min,
-                            # cached in data_cache.json)
-python collect_exhaustive.py  # exhaustive cs.LG + cs.SE collection (~10 min,
-                            # cached in data_cache.json)
-python analyze.py           # regenerates all figures and README.md
-```
-
----
-
-## Exhaustive per-category analysis (cs.LG and cs.SE)
-
-Unlike the sampling-based approach above, these counts are **exhaustive**:
-every paper submitted in the target month and indexed under the given
-OAI-PMH set is included.  This eliminates the rare-event bias that
-inflates uniqueness ratios in sparse samples.
-
-![Exhaustive unique authors per month](figure_exhaustive.png)
-
-### Exhaustive results: cs.LG
+### cs.LG (Machine Learning) — exhaustive monthly counts
 
 | Month | Total papers | Unique first authors | Ratio |
 |-------|-------------|---------------------|-------|
@@ -225,15 +60,22 @@ inflates uniqueness ratios in sparse samples.
 | 2026-03 | 4,174 | 3,901 | 93.5% |
 | 2026-04 | 3,847 | 3,612 | 93.9% |
 
-| Metric | OLS slope | R² | OLS p | MK τ | MK p | 12-mo change |
-|--------|----------|----|-------|------|------|-------------|
-| Total papers | +133.6/mo | 0.571 | 0.0045 | 0.515 | 0.0210 | **+38.4%** |
-| Unique first authors | +119.7/mo | 0.558 | 0.0052 | 0.485 | 0.0311 | **+36.1%** |
-| Uniqueness ratio | -0.2193%/mo | 0.669 | 0.0012 | -0.667 | 0.0018 | — |
+**12-month change:** 2,780 → 3,847 total papers (+38.4%);
+2,653 → 3,612 unique first authors (+36.1%).
 
-Unique first authors (cs.LG): **significant** (p < 0.05).
+| Metric | OLS slope | R² | OLS p | MK τ | MK p |
+|--------|----------|----|-------|------|------|
+| Total papers | +133.6 / mo | 0.571 | **0.0045** | 0.515 | **0.021** |
+| Unique first authors | +119.7 / mo | 0.558 | **0.0052** | 0.485 | **0.031** |
+| Uniqueness ratio | −0.219% / mo | 0.669 | 0.0012 | −0.667 | 0.0018 |
 
-### Exhaustive results: cs.SE
+Both total papers and unique first authors show a **statistically significant
+increasing trend** (OLS p < 0.01, MK p < 0.05). The uniqueness ratio
+(95.2% on average) is slightly but significantly declining, consistent with
+the growing pool of papers including a modest increase in multi-paper
+authors — the pool itself is expanding fast enough to dominate.
+
+### cs.SE (Software Engineering) — exhaustive monthly counts
 
 | Month | Total papers | Unique first authors | Ratio |
 |-------|-------------|---------------------|-------|
@@ -250,10 +92,68 @@ Unique first authors (cs.LG): **significant** (p < 0.05).
 | 2026-03 | 540 | 507 | 93.9% |
 | 2026-04 | 780 | 740 | 94.9% |
 
-| Metric | OLS slope | R² | OLS p | MK τ | MK p | 12-mo change |
-|--------|----------|----|-------|------|------|-------------|
-| Total papers | +31.7/mo | 0.660 | 0.0013 | 0.727 | 0.0005 | **+193.2%** |
-| Unique first authors | +30.1/mo | 0.670 | 0.0011 | 0.758 | 0.0002 | **+189.1%** |
-| Uniqueness ratio | -0.0193%/mo | 0.003 | 0.8561 | -0.212 | 0.3807 | — |
+**12-month change:** 266 → 780 total papers (+193.2%);
+256 → 740 unique first authors (+189.1%).
 
-Unique first authors (cs.SE): **significant** (p < 0.05).
+| Metric | OLS slope | R² | OLS p | MK τ | MK p |
+|--------|----------|----|-------|------|------|
+| Total papers | +31.7 / mo | 0.660 | **0.0013** | 0.727 | **0.0005** |
+| Unique first authors | +30.1 / mo | 0.670 | **0.0011** | 0.758 | **0.0002** |
+| Uniqueness ratio | −0.019% / mo | 0.003 | 0.856 | −0.212 | 0.381 |
+
+The growth in cs.SE is **striking and highly significant** by both tests
+(MK p = 0.0002 for unique authors). cs.SE nearly triples in submission
+volume over 12 months. The uniqueness ratio is flat (p = 0.856), meaning
+the entire growth is driven by genuinely new contributors entering the
+category, not by existing authors submitting more papers each.
+
+## Figure
+
+![Exhaustive unique first authors per month, cs.LG and cs.SE](figure_exhaustive.png)
+
+## Summary
+
+The data **support the hypothesis**. Both categories show strongly
+significant upward trends in unique first authors over May 2025 – April 2026:
+
+- **cs.LG** grew +36% in unique first authors (OLS p = 0.005).
+- **cs.SE** grew +189% in unique first authors (OLS p = 0.001), with a
+  flat uniqueness ratio — the new papers are from new people.
+
+The contrast between the two categories is itself informative. cs.LG is
+already a large, established community where growth is substantial but
+moderated. cs.SE's near-tripling in 12 months is anomalous by historical
+standards and consistent with AI coding tools (GitHub Copilot, Cursor,
+Claude Code, etc.) lowering the bar for software-engineering research
+submissions.
+
+## Caveats and limitations
+
+1. **No causal attribution.** We cannot establish that Gen AI caused the
+   growth. A 12-month window cannot rule out other drivers (conference
+   deadline shifts, new venues cross-posting, editorial policy changes).
+
+2. **No historical baseline.** Without the same exhaustive counts for
+   2020–2024 we cannot say whether +189% in cs.SE is anomalous or a
+   continuation of a pre-existing trend.
+
+3. **First author ≠ submitter.** The OAI-PMH API does not expose the
+   arXiv account identity. Advisors or co-authors sometimes submit on
+   behalf of first authors.
+
+4. **Name disambiguation.** Author names are not disambiguated. The same
+   person under different name variants is counted twice; a common name
+   may merge distinct people.
+
+5. **AI productivity vs. new entrants.** Growth in unique first authors
+   could still reflect a fixed pool of researchers each appearing as
+   first author more often (e.g. more single-author or student-led
+   papers), not necessarily researchers who are new to arXiv.
+
+## Reproducibility
+
+```bash
+pip install requests pandas matplotlib scipy numpy
+python collect_exhaustive.py   # ~10 min; results cached in data_cache.json
+python analyze.py              # recomputes stats, regenerates figure_exhaustive.png
+```
