@@ -1,6 +1,7 @@
 # arXiv contributor growth: is Gen AI causing an explosion of new submitters?
 
-**Author:** Martin Monperrus
+**TL;DR** — In both cs.SE and cs.LG the number of unique first authors per
+month grew significantly over May 2025 – April 2026. cs.SE nearly tripled (+189%), cs.LG grew +36%.
 
 **Cite as:**
 ```bibtex
@@ -11,9 +12,6 @@
   howpublished = {https://github.com/ASSERT-KTH/arxiv-contributor-increase}
 }
 ```
-
-**TL;DR** — In both cs.SE and cs.LG the number of unique first authors per
-month grew significantly over May 2025 – April 2026. cs.SE nearly tripled (+189%), cs.LG grew +36%.
 
 ## Hypothesis
 
