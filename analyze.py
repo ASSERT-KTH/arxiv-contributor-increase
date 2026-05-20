@@ -298,8 +298,8 @@ def main():
 
 
 def make_exhaustive_figure(dfs_exh: dict):
-    """2-panel figure: cs.LG and cs.SE unique authors (exhaustive counts)."""
-    CATS   = ["cs.LG", "cs.SE"]
+    """2-panel figure: cs.SE and cs.LG unique authors (exhaustive counts)."""
+    CATS   = ["cs.SE", "cs.LG"]
     COLORS = {"cs.LG": PURPLE, "cs.SE": GREEN}
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -341,7 +341,7 @@ def make_exhaustive_figure(dfs_exh: dict):
 
     fig.suptitle(
         "arXiv exhaustive unique first authors per month  ·  May 2025 – April 2026\n"
-        "cs.LG (Machine Learning) and cs.SE (Software Engineering)",
+        "cs.SE (Software Engineering) and cs.LG (Machine Learning)",
         fontsize=12, y=1.01)
     plt.tight_layout()
     plt.savefig("figure_exhaustive.png", dpi=150, bbox_inches="tight")
