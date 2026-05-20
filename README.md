@@ -43,22 +43,7 @@ All numbers below come from `data_cache.json` (keys `YYYY-MM-cs.LG` and
 `YYYY-MM-cs.SE`). The statistical summaries printed by `analyze.py` are the
 authoritative reference for p-values and slopes.
 
-### cs.LG (Machine Learning) — exhaustive monthly counts
-
-| Month | Total papers | Unique first authors |
-|-------|-------------|---------------------|
-| 2025-05 | 2,780 | 2,653 |
-| 2025-06 | 2,665 | 2,573 |
-| 2025-07 | 2,423 | 2,333 |
-| 2025-08 | 2,294 | 2,196 |
-| 2025-09 | 2,861 | 2,742 |
-| 2025-10 | 3,533 | 3,349 |
-| 2025-11 | 2,868 | 2,744 |
-| 2025-12 | 2,706 | 2,559 |
-| 2026-01 | 2,860 | 2,733 |
-| 2026-02 | 4,023 | 3,792 |
-| 2026-03 | 4,174 | 3,901 |
-| 2026-04 | 3,847 | 3,612 |
+### cs.LG (Machine Learning)
 
 **12-month change:** 2,780 → 3,847 total papers (+38.4%);
 2,653 → 3,612 unique first authors (+36.1%).
@@ -71,22 +56,7 @@ authoritative reference for p-values and slopes.
 Both total papers and unique first authors show a **statistically significant
 increasing trend** (OLS p < 0.01, MK p < 0.05).
 
-### cs.SE (Software Engineering) — exhaustive monthly counts
-
-| Month | Total papers | Unique first authors |
-|-------|-------------|---------------------|
-| 2025-05 | 266 | 256 |
-| 2025-06 | 322 | 300 |
-| 2025-07 | 351 | 332 |
-| 2025-08 | 279 | 270 |
-| 2025-09 | 349 | 335 |
-| 2025-10 | 445 | 427 |
-| 2025-11 | 339 | 330 |
-| 2025-12 | 378 | 361 |
-| 2026-01 | 472 | 452 |
-| 2026-02 | 424 | 406 |
-| 2026-03 | 540 | 507 |
-| 2026-04 | 780 | 740 |
+### cs.SE (Software Engineering)
 
 **12-month change:** 266 → 780 total papers (+193.2%);
 256 → 740 unique first authors (+189.1%).
