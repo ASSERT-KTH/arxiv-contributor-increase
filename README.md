@@ -1,5 +1,9 @@
 # arXiv contributor growth: is Gen AI causing an explosion of new submitters?
 
+**TL;DR** — Yes, in both cs.SE and cs.LG the number of unique first authors per
+month grew significantly over May 2025 – April 2026 (OLS p < 0.01, Mann-Kendall
+p < 0.05 for both). cs.SE nearly tripled (+189%), cs.LG grew +36%.
+
 ## Hypothesis
 
 With the widespread adoption of generative AI tools and autonomous coding
@@ -39,6 +43,8 @@ series. Significance threshold: α = 0.05.
 
 ## Results
 
+![Exhaustive unique first authors per month, cs.SE and cs.LG](figure_exhaustive.png)
+
 All numbers below come from `data_cache.json` (keys `YYYY-MM-cs.LG` and
 `YYYY-MM-cs.SE`). The statistical summaries printed by `analyze.py` are the
 authoritative reference for p-values and slopes.
@@ -69,10 +75,6 @@ increasing trend** (OLS p < 0.01, MK p < 0.05).
 The growth in cs.SE is **striking and highly significant** by both tests
 (MK p = 0.0002 for unique authors). cs.SE nearly triples in submission
 volume over 12 months.
-
-## Figure
-
-![Exhaustive unique first authors per month, cs.LG and cs.SE](figure_exhaustive.png)
 
 ## Summary
 
