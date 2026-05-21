@@ -1,6 +1,6 @@
 # arXiv contributor growth: is Gen AI causing an explosion of new submitters?
 
-**TL;DR** — In both cs.SE and cs.LG the number of unique first authors per
+**TL;DR** — In both cs.SE and cs.LG the number of unique submitters per
 month grew significantly over May 2025 – April 2026. cs.SE nearly tripled (+189%), cs.LG grew +36%.
 
 **Cite as:**
@@ -52,7 +52,7 @@ series. Significance threshold: α = 0.05.
 
 ## Results
 
-![Exhaustive unique first authors per month, cs.SE and cs.LG](figure_exhaustive.png)
+![Exhaustive unique submitters per month, cs.SE and cs.LG](figure_exhaustive.png)
 
 All numbers below come from `data_cache.json` (keys `YYYY-MM-cs.LG` and
 `YYYY-MM-cs.SE`). The statistical summaries printed by `analyze.py` are the
@@ -62,37 +62,37 @@ authoritative reference for p-values and slopes.
 ### cs.SE (Software Engineering)
 
 **12-month change:** 266 → 780 total papers (+193.2%);
-256 → 740 unique first authors (+189.1%).
+256 → 740 unique submitters (+189.1%).
 
 | Metric | OLS slope | R² | OLS p | MK τ | MK p |
 |--------|----------|----|-------|------|------|
 | Total papers | +31.7 / mo | 0.660 | **0.0013** | 0.727 | **0.0005** |
-| Unique first authors | +30.1 / mo | 0.670 | **0.0011** | 0.758 | **0.0002** |
+| Unique submitters | +30.1 / mo | 0.670 | **0.0011** | 0.758 | **0.0002** |
 
 The growth in cs.SE is **striking and highly significant** by both tests
-(MK p = 0.0002 for unique authors). cs.SE nearly triples in submission
+(MK p = 0.0002 for unique submitters). cs.SE nearly triples in submission
 volume over 12 months.
 
 ### cs.LG (Machine Learning)
 
 **12-month change:** 2,780 → 3,847 total papers (+38.4%);
-2,653 → 3,612 unique first authors (+36.1%).
+2,653 → 3,612 unique submitters (+36.1%).
 
 | Metric | OLS slope | R² | OLS p | MK τ | MK p |
 |--------|----------|----|-------|------|------|
 | Total papers | +133.6 / mo | 0.571 | **0.0045** | 0.515 | **0.021** |
-| Unique first authors | +119.7 / mo | 0.558 | **0.0052** | 0.485 | **0.031** |
+| Unique submitters | +119.7 / mo | 0.558 | **0.0052** | 0.485 | **0.031** |
 
-Both total papers and unique first authors show a **statistically significant
+Both total papers and unique submitters show a **statistically significant
 increasing trend** (OLS p < 0.01, MK p < 0.05).
 
 ## Summary
 
 The data **support the hypothesis**. Both categories show strongly
-significant upward trends in unique first authors over May 2025 – April 2026:
+significant upward trends in unique submitters over May 2025 – April 2026:
 
-- **cs.LG** grew +36% in unique first authors (OLS p = 0.005).
-- **cs.SE** grew +189% in unique first authors (OLS p = 0.001).
+- **cs.LG** grew +36% in unique submitters (OLS p = 0.005).
+- **cs.SE** grew +189% in unique submitters (OLS p = 0.001).
 
 The contrast between the two categories is itself informative. cs.LG is
 already a large, established community where growth is substantial but
@@ -118,7 +118,7 @@ submissions.
    person under different name variants is counted twice; a common name
    may merge distinct people.
 
-5. **AI productivity vs. new entrants.** Growth in unique first authors
+5. **AI productivity vs. new entrants.** Growth in unique submitters
    could still reflect a fixed pool of researchers each appearing as
    first author more often (e.g. more single-author or student-led
    papers), not necessarily researchers who are new to arXiv.

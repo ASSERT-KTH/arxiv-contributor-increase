@@ -95,9 +95,9 @@ def make_figure(df_all: pd.DataFrame, df_aiml: pd.DataFrame):
     _panel(axes[0, 1], x,
            df_all["est_unique"].values,
            BLUE,
-           "All arXiv — estimated unique first authors\n"
+           "All arXiv — estimated unique submitters\n"
            "(sample uniqueness ratio × official total)",
-           "Est. unique first authors / month",
+           "Est. unique submitters / month",
            stat_dict(df_all["est_unique"].values))
 
     # ── Panel C: uniqueness ratio comparison ─────────────────────────────────
@@ -107,9 +107,9 @@ def make_figure(df_all: pd.DataFrame, df_aiml: pd.DataFrame):
     sd_ra = stat_dict(ratio_all);  sd_rm = stat_dict(ratio_aiml)
     ax.plot(x, sd_ra["slope"]*x + sd_ra["intercept"],  "--", color=BLUE,   lw=1.5, alpha=0.7)
     ax.plot(x, sd_rm["slope"]*x + sd_rm["intercept"],  "--", color=PURPLE, lw=1.5, alpha=0.7)
-    ax.set_ylabel("% unique first authors in sample", fontsize=10)
+    ax.set_ylabel("% unique submitters in sample", fontsize=10)
     ax.set_title("Uniqueness ratio: all arXiv vs AI/ML\n"
-                 "(unique first authors ÷ sample)", fontsize=11, fontweight="bold", pad=5)
+                 "(unique submitters ÷ sample)", fontsize=11, fontweight="bold", pad=5)
     ax.legend(fontsize=9)
     ax.grid(alpha=0.3)
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:.1f}%"))
@@ -124,8 +124,8 @@ def make_figure(df_all: pd.DataFrame, df_aiml: pd.DataFrame):
     _panel(axes[1, 1], x,
            df_aiml["unique_in_sample"].values,
            PURPLE,
-           f"AI/ML ({AIML_SETS_LABEL})\nunique first authors in sample (variable sample size)",
-           "Unique first authors in sample",
+           f"AI/ML ({AIML_SETS_LABEL})\nunique submitters in sample (variable sample size)",
+           "Unique submitters in sample",
            stat_dict(df_aiml["unique_in_sample"].values.astype(float)))
     # Overlay sample-size markers
     ax2 = axes[1, 1].twinx()
@@ -311,7 +311,7 @@ def make_exhaustive_figure(dfs_exh: dict):
         sd_t = stat_dict(df["total_papers"].values.astype(float))
 
         ax.bar(x, df["unique_authors"].values, color=COLORS[cat], alpha=0.72, zorder=2,
-               label="Unique first authors")
+               label="Unique submitters")
         ax.bar(x, df["total_papers"].values, color="lightgray", alpha=0.5, zorder=1,
                label="Total papers")
 
@@ -320,7 +320,7 @@ def make_exhaustive_figure(dfs_exh: dict):
                 label=(f"OLS unique  slope={sd_u['slope']:+.1f}/mo  "
                        f"R²={sd_u['r2']:.2f}  p={sd_u['p']:.3f}"))
 
-        ax.set_title(f"{cat} — exhaustive unique first authors per month",
+        ax.set_title(f"{cat} — exhaustive unique submitters per month",
                      fontsize=11, fontweight="bold")
         ax.set_ylabel("Count", fontsize=10)
         ax.legend(fontsize=8, loc="upper left")
@@ -340,7 +340,7 @@ def make_exhaustive_figure(dfs_exh: dict):
                            ha="right", fontsize=9)
 
     fig.suptitle(
-        "arXiv exhaustive unique first authors per month  ·  May 2025 – April 2026\n"
+        "arXiv exhaustive unique submitters per month  ·  May 2025 – April 2026\n"
         "cs.SE (Software Engineering) and cs.LG (Machine Learning)",
         fontsize=12, y=1.01)
     plt.tight_layout()
